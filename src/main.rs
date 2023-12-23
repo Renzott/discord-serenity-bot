@@ -9,8 +9,12 @@
 //! git = "https://github.com/serenity-rs/serenity.git"
 //! features = ["cache", "framework", "standard_framework", "voice"]
 //! ```
+
+mod commands;
+mod utils;
+
 use std::{
-    //env,
+    env,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -18,6 +22,8 @@ use std::{
     // time::Duration,
 };
 
+use crate::commands::dummy::*;
+use crate::commands::playlist::*;
 use reqwest::Client as HttpClient;
 
 use serenity::{
@@ -46,6 +52,7 @@ use songbird::{
     SerenityInit,
     TrackEvent,
 };
+use tracing::info;
 
 struct HttpKey;
 
@@ -58,13 +65,13 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+        info!("{} is connected!", ready.user.name);
     }
 }
 
 #[group]
 #[commands(
-    deafen, join, leave, mute, play_fade, p, skip, stop, ping, undeafen, unmute
+    deafen, join, leave, mute, play_fade, play_song, skip, stop, ping, undeafen, unmute, dummy
 )]
 struct General;
 
@@ -73,7 +80,8 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Configure the client with your Discord bot token in the environment.
-    let token = "";
+    let token = env::var("DISCORD_TOKEN")
+        .expect("Expected a token in the environment");
 
     let framework = StandardFramework::new().group(&GENERAL_GROUP);
     framework.configure(Configuration::new().prefix("-"));
@@ -192,9 +200,26 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
             Event::Track(TrackEvent::End),
             TrackEndNotifier {
                 chan_id,
-                http: send_http,
+                http: send_http.clone(),
             },
         );
+        /*
+
+        handle.add_global_event(
+            Event::Track(TrackEvent::Play),
+            SongStartNotifier {
+                chan_id,
+                http: send_http.clone(),
+            },
+        );
+
+        handle.add_global_event(
+            Event::Track(TrackEvent::Playable),
+            SongPlayableNotifier {
+                chan_id,
+                http: send_http,
+            },
+        );*/
 
         // let send_http = ctx.http.clone();
 
@@ -226,11 +251,46 @@ struct TrackEndNotifier {
 impl VoiceEventHandler for TrackEndNotifier {
     async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
         if let EventContext::Track(track_list) = ctx {
-            check_msg(
+            info!("End");
+            /*check_msg(
                 self.chan_id
                     .say(&self.http, &format!("Tracks ended: {}.", track_list.len()))
                     .await,
-            );
+            );*/
+        }
+
+        None
+    }
+}
+
+// Play
+struct SongStartNotifier {
+    chan_id: ChannelId,
+    http: Arc<Http>,
+}
+
+#[async_trait]
+impl VoiceEventHandler for SongStartNotifier {
+    async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
+        if let EventContext::Track(track_list) = ctx {
+            info!("Start");
+        }
+
+        None
+    }
+}
+
+// Playable
+struct SongPlayableNotifier {
+    chan_id: ChannelId,
+    http: Arc<Http>,
+}
+
+#[async_trait]
+impl VoiceEventHandler for SongPlayableNotifier {
+    async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
+        if let EventContext::Track(track_list) = ctx {
+            info!("Playable");
         }
 
         None
@@ -461,25 +521,7 @@ impl VoiceEventHandler for SongEndNotifier {
 
 #[command]
 #[only_in(guilds)]
-async fn p(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    /* let url = match args.single::<String>() {
-        Ok(url) => url,
-        Err(_) => {
-            check_msg(
-                msg.channel_id
-                    .say(&ctx.http, "Must provide a URL to a video or audio")
-                    .await,
-            );
-
-            return Ok(());
-        },
-    }; */
-
-    //concat url with format "ytsearch:url"
-    //let url = format!("ytsearch:{}", url);
-
-    // handle match with 2 cases, first case, if url start with http, second case: get all args and concat, then search with ytsearch
-    
+async fn p(ctx: &Context, msg: &Message, args: Args) -> CommandResult { 
     let input = args.message().to_string();
 
     let url = match input.starts_with("http"){
