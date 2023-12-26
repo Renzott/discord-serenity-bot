@@ -23,18 +23,18 @@ FROM debian:bookworm-slim as runtime
 
 ENV DISCORD_TOKEN=$DISCORD_TOKEN
 
-RUN apt-get update && apt-get install -y ffmpeg
-RUN apt-get install -y libssl-dev
-RUN apt-get install -y ca-certificates
-RUN apt-get install -y software-properties-common
-RUN apt-get install -y python3-launchpadlib
+RUN apt-get update \
+    && apt-get install -y \
+    curl \
+    python3
 
 RUN ln -s libssl.so.3 libssl.so
 RUN ldconfig
 
-RUN add-apt-repository ppa:tomtomtom/yt-dlp
-RUN apt-get update
-RUN apt-get install -y yt-dlp
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+RUN chmod a+rx /usr/local/bin/yt-dlp
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /yt-dl-test/target/release/yt-dl-test .
 
