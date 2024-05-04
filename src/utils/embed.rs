@@ -1,4 +1,4 @@
-use serenity::{builder::{CreateMessage, CreateEmbed, CreateEmbedAuthor}, model::Colour};
+use serenity::{builder::{ CreateEmbed, CreateEmbedAuthor}, model::Colour};
 use songbird::input::AuxMetadata;
 
 use super::common::duration_to_string;
@@ -23,5 +23,15 @@ pub fn build_new_song_embed(song_metadata: AuxMetadata) -> CreateEmbed {
         .description(description)
         .color(Colour::new(0xFF0000));
 
+    embed
+}
+
+pub fn build_new_birthay_embed(username: String, image_url: String, message: String ) -> CreateEmbed {
+    let embed = CreateEmbed::new()
+        //`🎉  Feliz Cum ${userData?.nickname || userData.user.username}  🎉`
+        .title(format!("🎉  Feliz Cum {}  🎉", username))
+        .description(message)
+        .image(image_url)
+        .color(Colour::new(0xf9f900));
     embed
 }

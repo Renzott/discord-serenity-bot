@@ -12,6 +12,7 @@
 
 mod commands;
 mod utils;
+mod workers;
 
 use std::{
     env,
@@ -22,7 +23,7 @@ use std::{
     // time::Duration,
 };
 
-use crate::commands::dummy::*;
+use crate::{commands::dummy::*, workers::birthday::birthday_cron};
 use crate::commands::playlist::*;
 use reqwest::Client as HttpClient;
 
@@ -64,7 +65,10 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, context: Context, ready: Ready) {
+        tokio::spawn(async move {
+            let _ = birthday_cron(context).await;
+        });
         info!("{} is connected!", ready.user.name);
     }
 }
@@ -79,12 +83,16 @@ struct General;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    // Configure the client with your Discord bot token in the environment.
     let token = env::var("DISCORD_TOKEN")
         .expect("Expected a token in the environment");
 
+    let prefix = match env::var("DISCORD_PREFIX") {
+        Ok(val) => val,
+        Err(_) => "-".to_string(),
+    };
+
     let framework = StandardFramework::new().group(&GENERAL_GROUP);
-    framework.configure(Configuration::new().prefix("-"));
+    framework.configure(Configuration::new().prefix(prefix));
 
     let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
 

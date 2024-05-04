@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use rand::Rng;
 use serenity::client::Context;
 use reqwest::Client as HttpClient;
 
@@ -23,4 +24,10 @@ pub fn duration_to_string(duration: Duration) -> String {
     } else {
         format!("{:02}:{:02}", minutes, seconds)
     }
+}
+
+pub fn get_random_index_from_vec<T>(vec: &Vec<T>) -> usize {
+    let mut rng = rand::thread_rng();
+    let index = rng.gen_range(0..vec.len());
+    index
 }
