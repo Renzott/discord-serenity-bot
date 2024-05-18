@@ -19,5 +19,3 @@ jobs:
 
             - name: Deploy to Oracle Linux Cloud
               run: ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_HOST }} "cd ${{ secrets.PROYECT_DIR }} && bash deploy.sh"
-
-                    
