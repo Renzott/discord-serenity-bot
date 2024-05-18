@@ -21,8 +21,6 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim as runtime
 
-ENV DISCORD_TOKEN=$DISCORD_TOKEN
-
 RUN apt-get update \
     && apt-get install -y \
     curl \
