@@ -13,7 +13,7 @@ use reqwest::Client;
 
 #[command]
 #[only_in(guilds)]
-#[aliases("d", "dummy")]
+#[aliases("d", "dummy", "longDummyCommand")]
 async fn dummy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let input = args.message().to_string();
