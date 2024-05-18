@@ -23,4 +23,4 @@ sudo docker rm $CONTAINER_NAME || true
 sudo docker build -t $IMAGE_NAME .
 
 # Run the container
-sudo docker run -d --name $CONTAINER_NAME --env-file .env $IMAGE_
+sudo docker run -d --name $CONTAINER_NAME --env-file .env $IMAGE_NAME
