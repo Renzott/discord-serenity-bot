@@ -1,4 +1,5 @@
 use chrono::{Datelike, Utc};
+use tracing::{info, error};
 use std::{env, sync::Arc};
 
 use serde::Deserialize;
@@ -61,12 +62,13 @@ async fn send_birthday_message(
         .images
         .get(get_random_index_from_vec(&birthday_data.images))
         .unwrap_or(&String::from("https://i.imgur.com/1QZ0Q8w.jpg"))
-        .clone();
+        .to_string();
+
     let message = birthday_data
         .messages
         .get(get_random_index_from_vec(&birthday_data.messages))
         .unwrap_or(&String::from("Feliz cumpleaños!"))
-        .clone();
+        .to_string();
 
     let user = UserId::from(user_id);
 
@@ -80,13 +82,13 @@ async fn send_birthday_message(
 
     let username = user_data.global_name.unwrap_or(user_data.name);
 
-    let birthday_embed = build_new_birthay_embed(username, image.to_string(), message.to_string());
+    let birthday_embed = build_new_birthay_embed(&username, image, message);
 
     let builder = CreateMessage::new().embed(birthday_embed);
 
     match _channel_id.send_message(&_context, builder).await {
-        Ok(_) => println!("Message sent!"),
-        Err(why) => println!("Error sending message: {:?}", why),
+        Ok(_) => info!("Message sent! Today is {}'s birthday!", username),
+        Err(why) => error!("Error sending message: {:?}", why),
     }
 }
 
@@ -98,11 +100,13 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
     let job = Job::new_async("0 0 3 * * *", move |_uuid, _lock| {
         let _channel_id = ChannelId::from(get_birthday_channel_id());
         let _context = context_clone.clone();
+
+        info!("Running birthday cron job!");
         Box::pin(async move {
             let birthday_data: BirthdayData = match read_birthday_data(BIRTHDAY_DATA_PATH).await {
                 Ok(data) => data,
                 Err(why) => {
-                    println!("Error reading birthday data: {:?}", why);
+                    error!("Error reading birthday data: {:?}", why);
                     return;
                 }
             };
@@ -111,7 +115,7 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
                 match read_birthday_data(BIRTHDAY_USERS_DATA_PATH).await {
                     Ok(data) => data,
                     Err(why) => {
-                        println!("Error reading birthday users data: {:?}", why);
+                        error!("Error reading birthday users data: {:?}", why);
                         return;
                     }
                 };

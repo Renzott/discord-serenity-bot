@@ -26,7 +26,7 @@ pub fn build_new_song_embed(song_metadata: AuxMetadata) -> CreateEmbed {
     embed
 }
 
-pub fn build_new_birthay_embed(username: String, image_url: String, message: String ) -> CreateEmbed {
+pub fn build_new_birthay_embed(username: &String, image_url: String, message: String ) -> CreateEmbed {
     let embed = CreateEmbed::new()
         //`🎉  Feliz Cum ${userData?.nickname || userData.user.username}  🎉`
         .title(format!("🎉  Feliz Cum {}  🎉", username))

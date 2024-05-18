@@ -1,0 +1,24 @@
+name: Deploy to Oracle Linux Cloud
+
+on:
+    push:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up SSH
+              uses: webfactory/ssh-agent@v0.9.0
+              with:
+                ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+            - name: Deploy to Oracle Linux Cloud
+              run: |
+                chmod +x ${{ secrets.PROYECT_DIR }}/deploy.sh
+                ssh ${{ secrets.SSH_HOST }} '${{ secrets.PROYECT_DIR }}' && bash deploy.sh
+                    
