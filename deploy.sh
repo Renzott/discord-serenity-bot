@@ -10,11 +10,11 @@ git pull
 # Get the ID of the last created image
 IMAGE_ID=$(sudo docker images | grep $IMAGE_NAME | awk '{print $3}' | tail -n 1)
 
-# Remove the last created image
-sudo docker rmi $IMAGE_ID || true
-
 # Stop the container
 sudo docker stop $CONTAINER_NAME || true
+
+# Remove the last created image
+sudo docker rmi $IMAGE_ID || true
 
 # Remove the container
 sudo docker rm $CONTAINER_NAME || true
