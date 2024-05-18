@@ -18,7 +18,5 @@ jobs:
                 ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
             - name: Deploy to Oracle Linux Cloud
-              run: |
-                chmod +x ${{ secrets.PROYECT_DIR }}/deploy.sh
-                ssh ${{ secrets.SSH_HOST }} '${{ secrets.PROYECT_DIR }}' && bash deploy.sh
+              run: ssh ${{ secrets.SSH_HOST }} '${{ secrets.PROYECT_DIR }}' && bash deploy.sh
                     
