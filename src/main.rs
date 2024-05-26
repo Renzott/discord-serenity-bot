@@ -38,20 +38,11 @@ use serenity::{
             Configuration,
         },
         StandardFramework,
-    },
-    http::Http,
-    model::{channel::Message, gateway::Ready, prelude::ChannelId},
-    prelude::{GatewayIntents, Mentionable, TypeMapKey},
-    Result as SerenityResult,
+    }, http::Http, model::{channel::Message, gateway::Ready, prelude::ChannelId}, prelude::{GatewayIntents, Mentionable, TypeMapKey}, Result as SerenityResult
 };
 
 use songbird::{
-    input::YoutubeDl,
-    Event,
-    EventContext,
-    EventHandler as VoiceEventHandler,
-    SerenityInit,
-    TrackEvent,
+    input::YoutubeDl, Event, EventContext, EventHandler as VoiceEventHandler, SerenityInit, TrackEvent
 };
 use tracing::info;
 
@@ -75,7 +66,7 @@ impl EventHandler for Handler {
 
 #[group]
 #[commands(
-    deafen, join, leave, mute, play_fade, play_song, skip, stop, ping, undeafen, unmute, dummy
+    deafen, join, leave, mute, play_fade, play_song, skip, stop, pause, resume, ping, undeafen, unmute, dummy
 )]
 struct General;
 
@@ -108,13 +99,6 @@ async fn main() {
         .start()
         .await
         .map_err(|why| println!("Client ended: {:?}", why));
-
-    tokio::spawn(async move {
-        let _ = client
-            .start()
-            .await
-            .map_err(|why| println!("Client ended: {:?}", why));
-    });
 
     let _signal_err = tokio::signal::ctrl_c().await;
     println!("Received Ctrl-C, shutting down.");
@@ -632,6 +616,60 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         queue.stop();
 
         check_msg(msg.channel_id.say(&ctx.http, "Queue cleared.").await);
+    } else {
+        check_msg(
+            msg.channel_id
+                .say(&ctx.http, "Not in a voice channel to play in")
+                .await,
+        );
+    }
+
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+async fn pause(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let guild_id = msg.guild_id.unwrap();
+
+    let manager = songbird::get(ctx)
+        .await
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+        let _ = queue.pause(); 
+
+        check_msg(msg.channel_id.say(&ctx.http, "Queue paused.").await);
+    } else {
+        check_msg(
+            msg.channel_id
+                .say(&ctx.http, "Not in a voice channel to play in")
+                .await,
+        );
+    }
+
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+async fn resume(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let guild_id = msg.guild_id.unwrap();
+
+    let manager = songbird::get(ctx)
+        .await
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+        let _ = queue.resume();
+
+        check_msg(msg.channel_id.say(&ctx.http, "Queue resumed.").await);
     } else {
         check_msg(
             msg.channel_id
