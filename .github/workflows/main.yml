@@ -12,6 +12,12 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Send Alert to Discord that the bot is stopping
+              uses: tsickert/discord-webhook@v5.3.0
+              with:
+                webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+                raw-data: "json/server-stop.json"
+
             - name: Set up SSH
               uses: webfactory/ssh-agent@v0.9.0
               with:
@@ -19,3 +25,9 @@ jobs:
 
             - name: Deploy to Oracle Linux Cloud
               run: ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_HOST }} "cd ${{ secrets.PROYECT_DIR }} && bash deploy.sh"
+
+            - name: Send Alert to Discord that the bot is starting
+              uses: tsickert/discord-webhook@v5.3.0
+              with:
+                webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+                raw-data: "json/server-start.json"

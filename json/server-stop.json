@@ -1,0 +1,22 @@
+{
+  "content": null,
+  "embeds": [
+    {
+      "title": "🚨 Se esta reiniciado el bot",
+      "color": 16776960,
+      "fields": [
+        {
+          "name": "Info:",
+          "value": "Espere unos momentos, se esta aplicando cambios al Bot.\n\nEn **pocos segundos** volvera a estar el bot operativo..."
+        }
+      ],
+      "footer": {
+        "text": "Enviado desde Github Actions ✨",
+        "icon_url": "https://i.imgur.com/v2OkKcW.png"
+      }
+    }
+  ],
+  "username": "Carpincho Updates",
+  "avatar_url": "https://i.imgur.com/usWfvwX.png",
+  "attachments": []
+}

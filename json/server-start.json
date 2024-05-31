@@ -1,0 +1,40 @@
+{
+  "content": null,
+  "embeds": [
+    {
+      "title": "✨ Nueva Actualizacion",
+      "color": 1816575,
+      "fields": [
+        {
+          "name": "💡 Tipo:",
+          "value": "**Feature**",
+          "inline": true
+        },
+        {
+          "name": "⚡ Impacto:",
+          "value": "**Medio**",
+          "inline": true
+        },
+        {
+          "name": "Info:",
+          "value": "Esta nueva update se ha arreglado algunos problemas con respecto a algunos videos en particulares que tienen un codec diferente a lo normal en youtube. Me llevo un poco de tiempo de investigacion, ya esta solucionado 🔥"
+        },
+        {
+          "name": "Cosas Nuevas",
+          "value": "- Comando: **-nowplaying | -current | -np**. Comando para ver la cancion actual que esta sonando y el **tiempo transcurrido** de la cancion.\n- Se ha agregado un nuevo codec para videos con formato **MP4A y AVC1**"
+        },
+        {
+          "name": "Cambios",
+          "value": "- Se ha modificado el comando: **-skip**. Ahora retorna el tituto de la cancion skipeada.\n- Se ha cambiado la utilidad de: **-stop**. Ahora el comando **-stop | -pause**. Pausan la musica actual. Para volver a reproducirla se usa el comando **-resume**.\n- Se ha cambiado el alias de la funcion **stop**: Ahora el comando es **-clear | -stopall**. Este comando limpia el queue y para la musica actual.\n- Se ha limitado el **ingreso de playlists a la queue**. Esta funcionalidad se agregaran pronto."
+        }
+      ],
+      "footer": {
+        "text": "Enviado desde Github Actions ✨",
+        "icon_url": "https://i.imgur.com/v2OkKcW.png"
+      }
+    }
+  ],
+  "username": "Carpincho Updates",
+  "avatar_url": "https://i.imgur.com/usWfvwX.png",
+  "attachments": []
+}

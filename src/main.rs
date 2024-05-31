@@ -1,15 +1,3 @@
-//! Example demonstrating how to make use of individual track audio events,
-//! and how to use the `TrackQueue` system.
-//!
-//! Requires the "cache", "standard_framework", and "voice" features be enabled in your
-//! Cargo.toml, like so:
-//!
-//! ```toml
-//! [dependencies.serenity]
-//! git = "https://github.com/serenity-rs/serenity.git"
-//! features = ["cache", "framework", "standard_framework", "voice"]
-//! ```
-
 mod commands;
 mod utils;
 mod workers;
@@ -20,11 +8,10 @@ use std::{
         atomic::{AtomicUsize, Ordering},
         Arc,
     },
-    // time::Duration,
 };
 
-use crate::{commands::dummy::*, workers::birthday::birthday_cron};
 use crate::commands::playlist::*;
+use crate::{commands::dummy::*, workers::birthday::birthday_cron};
 use reqwest::Client as HttpClient;
 
 use serenity::{
@@ -33,16 +20,19 @@ use serenity::{
     framework::{
         standard::{
             macros::{command, group},
-            Args,
-            CommandResult,
-            Configuration,
+            Args, CommandResult, Configuration,
         },
         StandardFramework,
-    }, http::Http, model::{channel::Message, gateway::Ready, prelude::ChannelId}, prelude::{GatewayIntents, Mentionable, TypeMapKey}, Result as SerenityResult
+    },
+    http::Http,
+    model::{channel::Message, gateway::Ready, prelude::ChannelId},
+    prelude::{GatewayIntents, Mentionable, TypeMapKey},
+    Result as SerenityResult,
 };
 
 use songbird::{
-    input::YoutubeDl, Event, EventContext, EventHandler as VoiceEventHandler, SerenityInit, TrackEvent
+    input::{AuxMetadata, YoutubeDl},
+    Event, EventContext, EventHandler as VoiceEventHandler, SerenityInit, TrackEvent,
 };
 use tracing::info;
 
@@ -50,6 +40,11 @@ struct HttpKey;
 
 impl TypeMapKey for HttpKey {
     type Value = HttpClient;
+}
+
+struct AuxMetadataKey;
+impl TypeMapKey for AuxMetadataKey {
+    type Value = AuxMetadata;
 }
 
 struct Handler;
@@ -66,7 +61,21 @@ impl EventHandler for Handler {
 
 #[group]
 #[commands(
-    deafen, join, leave, mute, play_fade, play_song, skip, stop, pause, resume, ping, undeafen, unmute, dummy
+    deafen,
+    join,
+    leave,
+    mute,
+    play_fade,
+    play_song,
+    skip,
+    stop_and_clear,
+    pause,
+    resume,
+    ping,
+    undeafen,
+    unmute,
+    dummy,
+    now_playing
 )]
 struct General;
 
@@ -74,8 +83,7 @@ struct General;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let token = env::var("DISCORD_TOKEN")
-        .expect("Expected a token in the environment");
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let prefix = match env::var("DISCORD_PREFIX") {
         Ok(val) => val,
@@ -126,7 +134,7 @@ async fn deafen(ctx: &Context, msg: &Message) -> CommandResult {
             check_msg(msg.reply(ctx, "Not in a voice channel").await);
 
             return Ok(());
-        },
+        }
     };
 
     let mut handler = handler_lock.lock().await;
@@ -167,7 +175,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
             check_msg(msg.reply(ctx, "Not in a voice channel").await);
 
             return Ok(());
-        },
+        }
     };
 
     let manager = songbird::get(ctx)
@@ -359,7 +367,7 @@ async fn mute(ctx: &Context, msg: &Message) -> CommandResult {
             check_msg(msg.reply(ctx, "Not in a voice channel").await);
 
             return Ok(());
-        },
+        }
     };
 
     let mut handler = handler_lock.lock().await;
@@ -401,7 +409,7 @@ async fn play_fade(ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
             );
 
             return Ok(());
-        },
+        }
     };
 
     if !url.starts_with("http") {
@@ -428,26 +436,11 @@ async fn play_fade(ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
 
         let src = YoutubeDl::new(http_client, url);
 
-        // This handler object will allow you to, as needed,
-        // control the audio track via events and further commands.
         let song = handler.play_input(src.into());
-        //let send_http = ctx.http.clone();
+
         let chan_id = msg.channel_id;
 
-        // This shows how to periodically fire an event, in this case to
-        // periodically make a track quieter until it can be no longer heard.
-        /*let _ = song.add_event(
-            Event::Periodic(Duration::from_secs(5), Some(Duration::from_secs(7))),
-            SongFader {
-                chan_id,
-                http: send_http,
-            },
-        );*/
-
         let send_http = ctx.http.clone();
-
-        // This shows how to fire an event once an audio track completes,
-        // either due to hitting the end of the bytestream or stopped by user code.
         let _ = song.add_event(
             Event::Track(TrackEvent::End),
             SongEndNotifier {
@@ -513,61 +506,6 @@ impl VoiceEventHandler for SongEndNotifier {
 
 #[command]
 #[only_in(guilds)]
-async fn p(ctx: &Context, msg: &Message, args: Args) -> CommandResult { 
-    let input = args.message().to_string();
-
-    let url = match input.starts_with("http"){
-        true => {
-            let url = input.split_whitespace().next().unwrap();
-            url.to_string()
-        },
-        false => {
-            let format_url = format!("ytsearch:{}", input);
-            format_url
-        }
-    };
-
-    println!("url: {}", url);
-
-    let guild_id = msg.guild_id.unwrap();
-
-    let http_client = get_http_client(ctx).await;
-
-    let manager = songbird::get(ctx)
-        .await
-        .expect("Songbird Voice client placed in at initialisation.")
-        .clone();
-
-    if let Some(handler_lock) = manager.get(guild_id) {
-        let mut handler = handler_lock.lock().await;
-
-        // Here, we use lazy restartable sources to make sure that we don't pay
-        // for decoding, playback on tracks which aren't actually live yet.
-        let src = YoutubeDl::new(http_client, url);
-
-        handler.enqueue_input(src.into()).await;
-
-        check_msg(
-            msg.channel_id
-                .say(
-                    &ctx.http,
-                    format!("Added song to queue: position {}", handler.queue().len()),
-                )
-                .await,
-        );
-    } else {
-        check_msg(
-            msg.channel_id
-                .say(&ctx.http, "Not in a voice channel to play in")
-                .await,
-        );
-    }
-
-    Ok(())
-}
-
-#[command]
-#[only_in(guilds)]
 async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild_id = msg.guild_id.unwrap();
 
@@ -581,28 +519,47 @@ async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let queue = handler.queue();
         let _ = queue.skip();
 
-        check_msg(
-            msg.channel_id
-                .say(
-                    &ctx.http,
-                    format!("Song skipped: {} in queue.", queue.len()),
-                )
-                .await,
-        );
+        let title = match queue.current() {
+            Some(track) => {
+                let typemap = track.typemap().read().await;
+                typemap.get::<AuxMetadataKey>().unwrap().title.clone()
+            }
+            None => None,
+        };
+
+        if let Some(title) = title {
+            check_msg(
+                msg.channel_id
+                    .say(&ctx.http, format!("Se ha saltado la canción: {}", title))
+                    .await,
+            );
+        } else if queue.len() == 0 {
+            check_msg(
+                msg.channel_id
+                    .say(&ctx.http, "No hay canciones en la cola")
+                    .await,
+            );
+        } else {
+            check_msg(
+                msg.channel_id
+                    .say(&ctx.http, "Hay un error en la información de la canción")
+                    .await,
+            );
+        }
     } else {
         check_msg(
             msg.channel_id
-                .say(&ctx.http, "Not in a voice channel to play in")
+                .say(&ctx.http, "No estoy en un canal de voz")
                 .await,
         );
     }
-
     Ok(())
 }
 
 #[command]
 #[only_in(guilds)]
-async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+#[aliases("clear", "stopall")]
+async fn stop_and_clear(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild_id = msg.guild_id.unwrap();
 
     let manager = songbird::get(ctx)
@@ -615,11 +572,11 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let queue = handler.queue();
         queue.stop();
 
-        check_msg(msg.channel_id.say(&ctx.http, "Queue cleared.").await);
+        check_msg(msg.channel_id.say(&ctx.http, "Playlist limpiada").await);
     } else {
         check_msg(
             msg.channel_id
-                .say(&ctx.http, "Not in a voice channel to play in")
+                .say(&ctx.http, "No estoy en un canal de voz")
                 .await,
         );
     }
@@ -629,6 +586,7 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
+#[aliases("pause", "stop")]
 async fn pause(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild_id = msg.guild_id.unwrap();
 
@@ -640,13 +598,13 @@ async fn pause(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
         let queue = handler.queue();
-        let _ = queue.pause(); 
+        let _ = queue.pause();
 
-        check_msg(msg.channel_id.say(&ctx.http, "Queue paused.").await);
+        check_msg(msg.channel_id.say(&ctx.http, "Musica pausada").await);
     } else {
         check_msg(
             msg.channel_id
-                .say(&ctx.http, "Not in a voice channel to play in")
+                .say(&ctx.http, "No estoy en un canal de voz")
                 .await,
         );
     }
@@ -669,7 +627,7 @@ async fn resume(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let queue = handler.queue();
         let _ = queue.resume();
 
-        check_msg(msg.channel_id.say(&ctx.http, "Queue resumed.").await);
+        check_msg(msg.channel_id.say(&ctx.http, "Se ha reanudado la música").await);
     } else {
         check_msg(
             msg.channel_id

@@ -13,7 +13,7 @@ tokio = { version = "1.21.2", features = ["full"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 tracing-futures = "0.2.5"
-symphonia = { version = "0.5.3", features = ["mp3"] }
+symphonia = { version = "0.5.4", features = ["mp3","isomp4","aac"] }
 tokio-cron-scheduler = "0.9.4"
 chrono = "0.4.31"
 serde_json = "1.0.116"
