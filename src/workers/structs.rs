@@ -3,8 +3,8 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug)]
 pub struct BirthdayUser {
     pub id: String,
-    #[serde(rename = "cronString")]
-    pub cron_string: String,
+    #[serde(rename = "dayMonth")]
+    pub day_month: String,
 }
 
 #[derive(Deserialize, Debug)]

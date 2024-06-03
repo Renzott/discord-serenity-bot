@@ -36,4 +36,6 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /yt-dl-test/target/release/yt-dl-test .
 
+COPY data/ data/
+
 CMD ["./yt-dl-test"]

@@ -17,8 +17,8 @@ use crate::{
     workers::structs::{BirthdayData, BirthdayUserData}
 };
 
-const BIRTHDAY_USERS_DATA_PATH: &str = "src/data/birthday/users.json";
-const BIRTHDAY_DATA_PATH: &str = "src/data/birthday/data.json";
+const BIRTHDAY_USERS_DATA_PATH: &str = "data/birthday/users.json";
+const BIRTHDAY_DATA_PATH: &str = "data/birthday/data.json";
 
 fn get_birthday_channel_id() -> u64 {
     let birthday_channel_id = env::var("DISCORD_CHANNEL").expect("BIRTHDAY_CHANNEL_ID must be set");
@@ -97,13 +97,13 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
 
     let context_clone = Arc::new(context);
 
-    let job = Job::new_async("0 0 3 * * *", move |_uuid, _lock| {
+    let job = Job::new_async("*/20 * * * * *", move |_uuid, _lock| {
         let _channel_id = ChannelId::from(get_birthday_channel_id());
         let _context = context_clone.clone();
 
         info!("Running birthday cron job!");
         Box::pin(async move {
-            let birthday_data: BirthdayData = match read_birthday_data(BIRTHDAY_DATA_PATH).await {
+            let birthday_data = match read_birthday_data::<BirthdayData>(BIRTHDAY_DATA_PATH).await {
                 Ok(data) => data,
                 Err(why) => {
                     error!("Error reading birthday data: {:?}", why);
@@ -111,8 +111,8 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
                 }
             };
 
-            let birthday_users_data: BirthdayUserData =
-                match read_birthday_data(BIRTHDAY_USERS_DATA_PATH).await {
+            let birthday_users_data =
+                match read_birthday_data::<BirthdayUserData>(BIRTHDAY_USERS_DATA_PATH).await {
                     Ok(data) => data,
                     Err(why) => {
                         error!("Error reading birthday users data: {:?}", why);
@@ -121,7 +121,7 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
                 };
 
             for user in birthday_users_data.users {
-                if check_current_date_birthday(user.cron_string) {
+                if check_current_date_birthday(user.day_month) {
                     let user_id = user.id.parse::<u64>().unwrap();
                     let _birthday_data = birthday_data.clone();
                     send_birthday_message(&_context, _birthday_data, _channel_id, user_id).await;
