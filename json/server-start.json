@@ -17,15 +17,15 @@
         },
         {
           "name": "Info:",
-          "value": "Esta nueva update se ha arreglado algunos problemas con respecto a algunos videos en particulares que tienen un codec diferente a lo normal en youtube. Me llevo un poco de tiempo de investigacion, ya esta solucionado 🔥"
+          "value": "Esta nueva update se ha mejorado un poco la distribucion de los comandos y las funciones. Todavia no es perfecto pero de a poco se mejora con la organizacion.\nSi algo falla o no funciona como deberia, porfavor notifiquenme 👍"
         },
         {
           "name": "Cosas Nuevas",
-          "value": "- Comando: **-nowplaying | -current | -np**. Comando para ver la cancion actual que esta sonando y el **tiempo transcurrido** de la cancion.\n- Se ha agregado un nuevo codec para videos con formato **MP4A y AVC1**"
+          "value": "- Comando: **-loop | -repeat**. Comando para repetir de forma indefinida la cancion. Tambien, con el comando **-np** puedes ver el tiempo que la cancion ha estado repitiendose.\n- Evento: Cuando el Bot **se quede solo** en una llamada sin usuarios, y nadie entre en un lapso de **1 minuto**. El Bot de **desconectara**.\n- Evento: Cuando un nuevo usuario entre al servidor, sera recibido con un **mensaje** de bienvenida, una tirada de **1d20** y un pequeño mensaje con relacion a su tirada. Estos mensajes se veran en el mismo canal donde salen los **mensajes de sistema**."
         },
         {
           "name": "Cambios",
-          "value": "- Se ha modificado el comando: **-skip**. Ahora retorna el tituto de la cancion skipeada.\n- Se ha cambiado la utilidad de: **-stop**. Ahora el comando **-stop | -pause**. Pausan la musica actual. Para volver a reproducirla se usa el comando **-resume**.\n- Se ha cambiado el alias de la funcion **stop**: Ahora el comando es **-clear | -stopall**. Este comando limpia el queue y para la musica actual.\n- Se ha limitado el **ingreso de playlists a la queue**. Esta funcionalidad se agregaran pronto."
+          "value": "- Se ha arreglado el problema que no se enviaban los mensajes de cumpleaños\n- Se ha modificado la infomacion de los mensajes de cumpleaños y se ha agregado nuevos usuarios"
         }
       ],
       "footer": {

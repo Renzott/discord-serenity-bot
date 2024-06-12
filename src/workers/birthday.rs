@@ -97,7 +97,7 @@ pub async fn birthday_cron(context: Context) -> Result<(), JobSchedulerError> {
 
     let context_clone = Arc::new(context);
 
-    let job = Job::new_async("*/20 * * * * *", move |_uuid, _lock| {
+    let job = Job::new_async("0 0 3 * * *", move |_uuid, _lock| {
         let _channel_id = ChannelId::from(get_birthday_channel_id());
         let _context = context_clone.clone();
 
