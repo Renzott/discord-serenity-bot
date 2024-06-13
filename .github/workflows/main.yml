@@ -7,12 +7,16 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        
+        env:
+            SILENT_UPDATE: ${{ false }}
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Send Alert to Discord that the bot is stopping
+              if: ${{ env.SILENT_UPDATE }}
               uses: tsickert/discord-webhook@v5.3.0
               with:
                 webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -27,6 +31,7 @@ jobs:
               run: ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_HOST }} "cd ${{ secrets.PROYECT_DIR }} && bash deploy.sh"
 
             - name: Send Alert to Discord that the bot is starting
+              if: ${{ env.SILENT_UPDATE }}
               uses: tsickert/discord-webhook@v5.3.0
               with:
                 webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
