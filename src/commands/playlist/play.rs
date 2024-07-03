@@ -14,7 +14,7 @@ use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
 };
 use songbird::{CoreEvent, Event};
-use tracing::{info, warn};
+use tracing::warn;
 
 #[command]
 #[only_in(guilds)]
