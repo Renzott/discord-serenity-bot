@@ -27,7 +27,7 @@ impl EventHandler for ClientDisconnectNotifier {
         }
 
         let bot_id = self.bot_id;
-        let guild_id  = self.guild.id;
+        let guild_id = self.guild.id;
         let context_arc = Arc::clone(&self.serenity_context);
         let manager_arc = Arc::clone(&self.songbird_context);
 
@@ -62,6 +62,61 @@ impl EventHandler for ClientDisconnectNotifier {
         });
 
         *debounce.lock().await = Some(handle);
+        None
+    }
+}
+
+pub struct DriverDisconnect {
+    pub bot_id: UserId,
+    pub guild: Guild,
+    pub songbird_context: Arc<Songbird>,
+    pub serenity_context: Arc<Context>,
+}
+
+#[async_trait]
+impl EventHandler for DriverDisconnect {
+    async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
+        let bot_id = self.bot_id;
+        let guild_id = self.guild.id;
+        let context_arc = Arc::clone(&self.serenity_context);
+        let manager_arc = Arc::clone(&self.songbird_context);
+        
+        tokio::spawn(async move {
+            time::sleep(Duration::from_millis(1500)).await;
+            let cache = context_arc.cache.clone();
+            let current_guild = cache.guild(guild_id).unwrap().clone();
+
+            let current_channel_bot_connect = current_guild
+                .voice_states
+                .get(&bot_id)
+                .and_then(|voice_state| voice_state.channel_id)
+                .map(|channel_id| {
+                    current_guild
+                        .voice_states
+                        .iter()
+                        .filter(move |(_, v)| v.channel_id == Some(channel_id))
+                        .filter(|(_, v)| v.user_id == bot_id)
+                });
+
+            info!("current_channel_bot_connect: {:?}", current_channel_bot_connect);
+            if current_channel_bot_connect.is_none() {
+                let has_handler = manager_arc.get(guild_id).is_some();
+                
+                if has_handler {
+
+                    if let Some(handler_lock) = manager_arc.get(guild_id) {
+                        let handler = handler_lock.lock().await;
+                        let queue = handler.queue();
+                        queue.stop();
+                    }
+
+                    if let Err(e) = manager_arc.remove(guild_id).await {
+                        info!("Failed: {:?}", e);
+                    }
+                }
+            }
+        });
+
         None
     }
 }

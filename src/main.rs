@@ -69,6 +69,10 @@ impl EventHandler for Handler {
     
         let username_id = new_member.user.id;
 
+        // only specific guild
+        if guild_id != GuildId::from(741109166785167511) {
+            return;
+        }
 
         let guild: Guild = match ctx.cache.guild(guild_id) {
             Some(guild) => guild.clone(),

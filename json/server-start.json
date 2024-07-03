@@ -7,25 +7,25 @@
       "fields": [
         {
           "name": "💡 Tipo:",
-          "value": "**Feature**",
+          "value": "**Fix**",
           "inline": true
         },
         {
           "name": "⚡ Impacto:",
-          "value": "**Medio**",
+          "value": "**Bajo**",
           "inline": true
         },
         {
           "name": "Info:",
-          "value": "Esta nueva update se ha mejorado un poco la distribucion de los comandos y las funciones. Todavia no es perfecto pero de a poco se mejora con la organizacion.\nSi algo falla o no funciona como deberia, porfavor notifiquenme 👍"
+          "value": "Esta nueva update, he arreglaro un problema que cierto usuario _\"Compla\"_ estaba ocacionando, de todas formas es mas un fallo de mismo framework y que no deberia ocurrir, quizas abra un ticket en el proyecto para ver porque ocurre. Ya esta solucionado asi que ya no deberia ocurrir este problema. Si el problema persiste, por favor mencionenme para hacer debug al problema."
         },
         {
           "name": "Cosas Nuevas",
-          "value": "- Comando: **-loop | -repeat**. Comando para repetir de forma indefinida la cancion. Tambien, con el comando **-np** puedes ver el tiempo que la cancion ha estado repitiendose.\n- Evento: Cuando el Bot **se quede solo** en una llamada sin usuarios, y nadie entre en un lapso de **1 minuto**. El Bot de **desconectara**.\n- Evento: Cuando un nuevo usuario entre al servidor, sera recibido con un **mensaje** de bienvenida, una tirada de **1d20** y un pequeño mensaje con relacion a su tirada. Estos mensajes se veran en el mismo canal donde salen los **mensajes de sistema**."
+          "value": "- Evento: Cuando el Bot es desconectado **forzosamente** de un canal. El bot se desconectara correctamente. Si notan problemas con el bot, pueden usar el comando **-leave** para eliminar una posible session fantasma."
         },
         {
           "name": "Cambios",
-          "value": "- Se ha arreglado el problema que no se enviaban los mensajes de cumpleaños\n- Se ha modificado la infomacion de los mensajes de cumpleaños y se ha agregado nuevos usuarios"
+          "value": "- Se ha modificado los titulos de los mensajes de ingreso al servidor.\n- Se ha modificado los mensajes de ingreso al servidor."
         }
       ],
       "footer": {

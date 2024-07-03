@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::check_msg;
-use crate::commands::events::leave_channel::ClientDisconnectNotifier;
+use crate::commands::events::leave_channel::{ClientDisconnectNotifier, DriverDisconnect};
 
 use serenity::all::UserId;
 use serenity::all::{client::Context, standard::macros::command, standard::CommandResult};
@@ -53,16 +53,25 @@ async fn join_channel(ctx: &Context, msg: &Message) -> CommandResult {
 
         handler.add_global_event(
             Event::Core(CoreEvent::ClientDisconnect),
-            ClientDisconnectNotifier{
+            ClientDisconnectNotifier {
                 bot_id,
                 guild: current_guild.clone(),
                 http: ctx.http.clone(),
-                serenity_context: context_arc,
+                serenity_context: context_arc.clone(),
                 songbird_context: manager.clone(),
                 debounce: Default::default(),
-            }
+            },
         );
 
+        handler.add_global_event(
+            Event::Core(CoreEvent::DriverDisconnect),
+            DriverDisconnect {
+                bot_id,
+                guild: current_guild.clone(),
+                songbird_context: manager,
+                serenity_context: context_arc,
+            },
+        );
     } else {
         check_msg(
             msg.channel_id

@@ -86,23 +86,7 @@ pub fn build_new_birthay_embed(
         .color(Colour::new(0xf9f900));
     embed
 }
-/*
-{
-  "content": null,
-  "embeds": [
-    {
-      "title": "TITLE DADO, BIENVENIDO",
-      "description": "_FRASE DEL DADO_",
-      "color": 16766720,
-      "thumbnail": {
-        "url": "https://cdn.discordapp.com/attachments/438178442077405186/1250239433006120990/klipartz.com_1.png?ex=666a37b5&is=6668e635&hm=45cd8bb4adbb340fcc31e57b18bd1220197fb9cbdffc34d6e7b4dbfbb8b8be1e&"
-      }
-    }
-  ],
-  "attachments": []
-}
-*/
-//CreateEmbed
+
 pub async fn build_new_user_embed(username_id: UserId) -> Result<CreateEmbed, Error> {
     let data = match get_welcome_farewell_data().await {
         Ok(data) => data,

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     check_msg,
     commands::{
-        events::leave_channel::ClientDisconnectNotifier, functions::track_fun::add_track_to_queue,
+        events::leave_channel::{ClientDisconnectNotifier, DriverDisconnect}, functions::track_fun::add_track_to_queue,
     },
     utils::common::get_http_client,
 };
@@ -14,7 +14,7 @@ use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
 };
 use songbird::{CoreEvent, Event};
-use tracing::warn;
+use tracing::{info, warn};
 
 #[command]
 #[only_in(guilds)]
@@ -77,11 +77,21 @@ async fn play_song(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 Event::Core(CoreEvent::ClientDisconnect),
                 ClientDisconnectNotifier {
                     bot_id,
-                    guild: new_guild,
+                    guild: new_guild.clone(),
                     http: ctx.http.clone(),
-                    serenity_context: context_arc,
+                    serenity_context: context_arc.clone(),
                     songbird_context: manager.clone(),
                     debounce: Default::default(),
+                },
+            );
+
+            handler.add_global_event(
+                Event::Core(CoreEvent::DriverDisconnect),
+                DriverDisconnect {
+                    bot_id,
+                    guild: new_guild,
+                    songbird_context: manager,
+                    serenity_context: context_arc,
                 },
             );
 
