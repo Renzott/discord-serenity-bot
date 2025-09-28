@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
         
         env:
-            SILENT_UPDATE: ${{ false }}
+            SILENT_UPDATE: ${{ true }}
 
         steps:
             - name: Checkout repository

@@ -32,6 +32,10 @@ RUN ldconfig
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
+RUN mkdir -p /root/.config/yt-dlp
+COPY cookies.txt /root/.config/yt-dlp/cookies.txt
+RUN echo "--cookies /root/.config/yt-dlp/cookies.txt" > /root/.config/yt-dlp/config
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /yt-dl-test/target/release/yt-dl-test .

@@ -4,6 +4,9 @@ mod workers;
 mod models;
 
 use std::env;
+use std::sync::OnceLock;
+
+use crate::commands::dummy::dummy::*;
 
 use crate::commands::playlist::{
     loop_song::*,
@@ -53,12 +56,16 @@ impl TypeMapKey for AuxMetadataKey {
 
 struct Handler;
 
+static STARTED: OnceLock<()> = OnceLock::new();
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, context: Context, ready: Ready) {
-        tokio::spawn(async move {
-            let _ = birthday_cron(context).await;
-        });
+        if STARTED.set(()).is_ok() {
+            tokio::spawn(async move {
+                let _ = birthday_cron(context).await;
+            });
+        }
         info!("{} is connected!", ready.user.name);
     }
 
@@ -109,7 +116,7 @@ impl EventHandler for Handler {
 
     // add event to Interactions with the bot (react emojis)
     async fn reaction_add(&self, _ctx: Context, reaction: Reaction) {
-        let reaction = &reaction.clone();
+        /* let reaction = &reaction.clone();
 
         // if is a bot reaction, return
         if let Some(member) = &reaction.member {
@@ -124,10 +131,15 @@ impl EventHandler for Handler {
         if emoji == ReactionType::Unicode("🎉".to_string()) {
             println!("Reaction detected");
             println!("Reaction: {:?}", reaction);
-        }
+        } */
     }
 }
 
+#[group]
+#[commands(
+    dummy
+)]
+struct DummyCommand;
 
 #[group]
 #[commands(
@@ -160,7 +172,7 @@ async fn main() {
         Err(_) => "-".to_string(),
     };
 
-    let framework = StandardFramework::new().group(&VOICECHANNELCOMMAND_GROUP).group(&PLAYLISTCOMMAND_GROUP);
+    let framework = StandardFramework::new().group(&VOICECHANNELCOMMAND_GROUP).group(&PLAYLISTCOMMAND_GROUP).group(&DUMMYCOMMAND_GROUP);
     framework.configure(Configuration::new().prefix(prefix));
 
     let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MEMBERS;

@@ -12,20 +12,16 @@
         },
         {
           "name": "⚡ Impacto:",
-          "value": "**Bajo**",
+          "value": "**Medio**",
           "inline": true
         },
         {
           "name": "Info:",
-          "value": "Esta nueva update, he arreglaro un problema que cierto usuario _\"Compla\"_ estaba ocacionando, de todas formas es mas un fallo de mismo framework y que no deberia ocurrir, quizas abra un ticket en el proyecto para ver porque ocurre. Ya esta solucionado asi que ya no deberia ocurrir este problema. Si el problema persiste, por favor mencionenme para hacer debug al problema."
-        },
-        {
-          "name": "Cosas Nuevas",
-          "value": "- Evento: Cuando el Bot es desconectado **forzosamente** de un canal. El bot se desconectara correctamente. Si notan problemas con el bot, pueden usar el comando **-leave** para eliminar una posible session fantasma."
+          "value": "Luego de 500 años, se ha corregido el evento de los cumpleaños duplicados, estare revisando si pasa denuevo"
         },
         {
           "name": "Cambios",
-          "value": "- Se ha modificado los titulos de los mensajes de ingreso al servidor.\n- Se ha modificado los mensajes de ingreso al servidor."
+          "value": "- Ahora solo se publicara solo un mensaje por cumpleañero, esto era un error de varios shards del propio server de Discord.\n- Se han agregado nuevos mensajes e imagenes para los cumpleaños"
         }
       ],
       "footer": {
